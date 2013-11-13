@@ -9,6 +9,8 @@
   "author": "wilhelmson",
   "license": "BSD-2-Clause",
   "dependencies": {
-    "reqwest": "~0.9.3"
+    "reqwest": "~0.9.3",
+    "lodash": "~2.3.0",
+    "dom-delegate": "~0.3.2"
   }
 }

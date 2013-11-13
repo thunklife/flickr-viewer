@@ -1,8 +1,6 @@
-//don't forget to npm install com-delegate;
-//look for a good extend module that doesn't require underscore.
-//maybe just a customer lodash build?
 var Delegate = require('dom-delegate'),
 	EventEmitter = require('events').EventEmitter,
+	extend = require('lodash').extend;
 	reqwest = require('reqwest'),
 	apiKey = '934910a2c34c06b6b167e1589069c274',
 	baseUrl = "http://api.flickr.com/services/rest/?&api_key=" + apiKey + "&format=json&nojsoncallback=1&api_cluster=";
@@ -29,7 +27,6 @@ SearchBar.prototype.onTermEntered = function(e){
 
 SearchBar.prototype.onSearchClicked = function(e){
 	if(this.term){
-		//update navigation using location-bar;
 		url = baseUrl + "&method=flickr.tags.getClusterPhotos&tag=" + this.term;		
 		reqwest({
 			url: url,
@@ -43,6 +40,6 @@ SearchBar.prototype.onSearchClicked = function(e){
 	}
 };
 
-//extend prototypes
+extend(SearchBar.prototype, EventEmitter.prototype);
 
 module.exports = SearchBar;
