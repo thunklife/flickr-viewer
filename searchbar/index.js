@@ -1,23 +1,24 @@
 var Delegate = require('dom-delegate'),
 	EventEmitter = require('events').EventEmitter,
 	extend = require('lodash').extend;
+	template = require('./search.hbs'),
 	reqwest = require('reqwest'),
 	apiKey = '934910a2c34c06b6b167e1589069c274',
-	baseUrl = "http://api.flickr.com/services/rest/?&api_key=" + apiKey + "&format=json&nojsoncallback=1&api_cluster=";
+	baseUrl = "http://api.flickr.com/services/rest/?&api_key=" + apiKey;
+	urlSuffix = "&format=json&nojsoncallback=1"
 
 function SearchBar(element){
 	EventEmitter.call(this);
 	this.element = element;
 	this.term = '';
-	this.delegate = new Delegate(this.element);
 	this.render();
-	this.delegate.on('blur', '.searchTerm', this.onTermEntered.bind(this));
+	this.delegate = new Delegate(this.element);
 	this.delegate.on('click', '.searchButton', this.onSearchClicked.bind(this));
 }
 
 SearchBar.prototype.render = function(){
-	//call handlebars to get the template
-	//set initial value to this.searchTerm;
+	this.element.innerHTML = template(this);
+	document.querySelector('.searchTerm').addEventListener('blur', this.onTermEntered.bind(this));
 };
 
 SearchBar.prototype.onTermEntered = function(e){
@@ -26,16 +27,20 @@ SearchBar.prototype.onTermEntered = function(e){
 };
 
 SearchBar.prototype.onSearchClicked = function(e){
+	var url;
 	if(this.term){
-		url = baseUrl + "&method=flickr.tags.getClusterPhotos&tag=" + this.term;		
+		url = baseUrl + "&method=flickr.tags.getClusterPhotos&tag=" + this.term + urlSuffix;	
 		reqwest({
 			url: url,
-			method: "get",
-			type: "json",
+			method: 'get',
+			type: 'json',
 			crossOrigin: true,
-			success: function searchReturned (data){
-				this.emit('searchReturned', data);
-			}		
+			success: function (resp){
+				this.emit('searchReturned', resp);
+			}.bind(this),
+			error: function (err){
+				console.log(err);
+			}
 		});
 	}
 };
