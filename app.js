@@ -1,4 +1,4 @@
-var SearchBar = require('./search'),
+var SearchBar = require('./searchbar'),
 	Thumbnails = require('./thumbs'),
 	domready = require('domready');
 
