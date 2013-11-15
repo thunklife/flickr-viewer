@@ -1,6 +1,6 @@
 var Delegate = require('dom-delegate'),
 	EventEmitter = require('events').EventEmitter,
-	extend = require('lodash').extend;
+	inherit = require('util').inherits,
 	template = require('./search.hbs'),
 	reqwest = require('reqwest'),
 	apiKey = '934910a2c34c06b6b167e1589069c274',
@@ -15,6 +15,8 @@ function SearchBar(element){
 	this.delegate = new Delegate(this.element);
 	this.delegate.on('click', '.searchButton', this.onSearchClicked.bind(this));
 }
+
+inherit(SearchBar, EventEmitter);
 
 SearchBar.prototype.render = function(){
 	this.element.innerHTML = template(this);
@@ -44,7 +46,5 @@ SearchBar.prototype.onSearchClicked = function(e){
 		});
 	}
 };
-
-extend(SearchBar.prototype, EventEmitter.prototype);
 
 module.exports = SearchBar;
