@@ -14,6 +14,7 @@ function SearchBar(element){
 	this.render();
 	this.delegate = new Delegate(this.element);
 	this.delegate.on('click', '.searchButton', this.onSearchClicked.bind(this));
+	this.searchFailed = false;
 }
 
 inherit(SearchBar, EventEmitter);
@@ -38,7 +39,11 @@ SearchBar.prototype.onSearchClicked = function(e){
 			type: 'json',
 			crossOrigin: true,
 			success: function (resp){
-				this.emit('searchReturned', resp);
+				if(resp.photos.photo.length){
+					this.emit('searchReturned', resp.photos.photo);
+					return;
+				}
+				this.searchFailed = true;
 			}.bind(this),
 			error: function (err){
 				console.log(err);

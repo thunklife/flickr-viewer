@@ -8,7 +8,9 @@ function run(){
 		searchbar = new SearchBar(searchContainer);
 		thumbnails = new Thumbnails(thumbsContainer);
 
-	searchbar.on('searchReturned', thumbnails.render)
+	searchbar.on('searchReturned', function(photos){
+		thumbnails.render(photos);
+	});
 };
 
 domready(run);
