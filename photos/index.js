@@ -1,13 +1,13 @@
 var Thumbnails = require('./thumbs'),
 	Viewer = require('./viewer'),
-	template = require('./photos.hbs');
+	template = require('./header.hbs');
 
 function Photos(element){
 	var thumbsContainer = element.querySelector('#thumbs-container'),
 		imageContainer = element.querySelector('#image-container');
 		
-	this.header = element.querySelector('#results-header');
 	this.title = "";
+	this.header = element.querySelector('#results-header');
 	this.thumbNails = new Thumbnails(thumbsContainer);
 	this.viewer = new Viewer(imageContainer);
 }
