@@ -1,15 +1,15 @@
 var SearchBar = require('./searchbar'),
-	Thumbnails = require('./thumbs'),
+	PhotoViewer = require('./photos'),
 	domready = require('domready');
 
 function run(){
-	var searchContainer = document.getElementById('searchContainer'),
-		thumbsContainer = document.getElementById('thumbsContainer'),
+	var searchContainer = document.getElementById('search-container'),
+		photosContainer = document.getElementById('photos-container'),
 		searchbar = new SearchBar(searchContainer);
-		thumbnails = new Thumbnails(thumbsContainer);
+		photos = new PhotoViewer(photosContainer);
 
-	searchbar.on('searchReturned', function(photos){
-		thumbnails.render(photos);
+	searchbar.on('searchReturned', function(searchResults){
+		photos.renderThumbs(searchResults);
 	});
 };
 
