@@ -14,6 +14,7 @@ function SearchBar(element){
 	this.render();
 	this.delegate = new Delegate(this.element);
 	this.delegate.on('click', '.searchButton', this.onSearchClicked.bind(this));
+	this.delegate.on('blur', '.searchTerm', this.onTermEntered.bind(this));
 	this.searchFailed = false;
 }
 
@@ -21,7 +22,6 @@ inherit(SearchBar, EventEmitter);
 
 SearchBar.prototype.render = function(){
 	this.element.innerHTML = template(this);
-	document.querySelector('.searchTerm').addEventListener('blur', this.onTermEntered.bind(this));
 };
 
 SearchBar.prototype.onTermEntered = function(e){
@@ -40,7 +40,7 @@ SearchBar.prototype.onSearchClicked = function(e){
 			crossOrigin: true,
 			success: function (resp){
 				if(resp.photos.photo.length){
-					this.emit('searchReturned', resp.photos.photo);
+					this.emit('searchReturned', {title: this.term, photos: resp.photos.photo});
 					return;
 				}
 				this.searchFailed = true;
