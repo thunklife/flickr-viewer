@@ -9,7 +9,7 @@ function run(){
 		photos = new PhotoViewer(photosContainer);
 
 	searchbar.on('searchReturned', function(searchResults){
-		photos.renderThumbs(searchResults);
+		photos.displaySearchResults(searchResults);
 	});
 };
 
