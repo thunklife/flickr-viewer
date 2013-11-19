@@ -11,7 +11,13 @@ function Thumbnails(element){
 	this.title;
 	this.delegate = new Delegate(this.element);
 	this.delegate.on('click', '.image-link', function(e){
-		console.log('clicked');
+		var id = e.target.id,
+			thumb = this.photos.filter(function(photo){
+				return photo.id === id;
+			});
+			if(!thumb) return console.err("WAT?!");
+
+			this.emit('thumbClicked', thumb);
 	})
 }
 
