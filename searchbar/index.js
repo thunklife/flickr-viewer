@@ -13,8 +13,8 @@ function SearchBar(element){
 	this.term = '';
 	this.render();
 	this.delegate = new Delegate(this.element);
-	this.delegate.on('click', '.searchButton', this.onSearchClicked.bind(this));
-	this.delegate.on('blur', '.searchTerm', this.onTermEntered.bind(this));
+	this.delegate.on('click', '.search-button', this.onSearchClicked.bind(this));
+	this.delegate.on('blur', '.search-term', this.onTermEntered.bind(this));
 	this.searchFailed = false;
 }
 
