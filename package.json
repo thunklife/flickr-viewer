@@ -4,7 +4,13 @@
   "description": "simple flickr search app",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build-js": "browserify app.js | uglifyjs -mc > public/app.js",
+    "build-css": "cat css/*.css > public/css/site.css",
+    "build": "npm run build-js && npm run build-css",
+    "watch-js": "watchify -t hbsfy app.js -o public/app.js",
+    "watch-css": "catw css/*.css -o public/css/site.css",
+    "watch": "npm run watch-js && npm run watch-css",
+    "start": "http-server"
   },
   "author": "wilhelmson",
   "license": "BSD-2-Clause",
@@ -14,6 +20,13 @@
     "dom-delegate": "~0.4.0",
     "handlebars": "~1.0.12",
     "hbsfy": "~1.0.0",
-    "domready": "~0.2.13"
+    "domready": "~0.2.13",
+    "browserify": "~2.35.2",
+    "uglifyjs": "~2.3.6"
+  },
+  "devDependencies":{
+    "watchify": "~0.1.0",
+    "catw": "~0.0.1",
+    "http-server": "~0.5.5"
   }
 }
