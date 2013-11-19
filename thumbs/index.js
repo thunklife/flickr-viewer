@@ -15,10 +15,11 @@ function Thumbnails(element){
 			thumb = this.photos.filter(function(photo){
 				return photo.id === id;
 			});
-			if(!thumb) return console.err("WAT?!");
+			e.preventDefault();
+			if(!thumb.length) return console.err("WAT?!");
 
-			this.emit('thumbClicked', thumb);
-	})
+			this.emit('thumbClicked', thumb[0]);
+	}.bind(this));
 }
 
 inherits(Thumbnails, EventEmitter)
