@@ -29,10 +29,12 @@ SearchBar.prototype.onTermEntered = function(e){
 	this.term = term || '';
 };
 
-SearchBar.prototype.onSearchClicked = function(e){
+SearchBar.prototype.search = function(term){
 	var url;
-	if(this.term){
-		url = baseUrl + "&method=flickr.tags.getClusterPhotos&tag=" + this.term + urlSuffix;	
+	if(!term) return;
+	this.term = term;
+
+	url = baseUrl + "&method=flickr.tags.getClusterPhotos&tag=" + this.term + urlSuffix;	
 		reqwest({
 			url: url,
 			method: 'get',
@@ -49,6 +51,12 @@ SearchBar.prototype.onSearchClicked = function(e){
 				console.log(err);
 			}
 		});
+}
+
+SearchBar.prototype.onSearchClicked = function(){
+	if(this.term){
+		this.search(this.term);
+		this.emit('searchClicked', this.term);
 	}
 };
 

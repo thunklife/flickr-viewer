@@ -21,7 +21,7 @@ function Thumbnails(element){
 	}.bind(this));
 }
 
-inherits(Thumbnails, EventEmitter)
+inherits(Thumbnails, EventEmitter);
 
 Thumbnails.prototype.render = function(photos){
 	this.photos = photos.map(function(photo){

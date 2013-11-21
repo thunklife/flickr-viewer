@@ -4,7 +4,7 @@
   "description": "simple flickr search app",
   "main": "index.js",
   "scripts": {
-    "build-js": "browserify app.js | uglifyjs -mc > public/app.js",
+    "build-js": "browserify -t hbsfy app.js | uglifyjs -mc > public/app.js",
     "build-css": "cat css/*.css > public/css/site.css",
     "build": "npm run build-js && npm run build-css",
     "watch-js": "watchify -t hbsfy app.js -o public/app.js",
@@ -13,7 +13,7 @@
     "start": "http-server"
   },
   "author": "wilhelmson",
-  "license": "BSD-2-Clause",
+  "license": "MIT",
   "dependencies": {
     "reqwest": "~0.9.3",
     "lodash": "~2.3.0",
@@ -22,9 +22,10 @@
     "hbsfy": "~1.0.0",
     "domready": "~0.2.13",
     "browserify": "~2.35.2",
-    "uglifyjs": "~2.3.6"
+    "location-bar": "~1.0.0",
+    "uglify-js": "~2.4.3"
   },
-  "devDependencies":{
+  "devDependencies": {
     "watchify": "~0.1.0",
     "catw": "~0.0.1",
     "http-server": "~0.5.5"
