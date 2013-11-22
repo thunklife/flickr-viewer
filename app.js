@@ -9,17 +9,35 @@ function run(){
 		searchbar = new SearchBar(searchContainer);
 		photos = new PhotoViewer(photosContainer);
 
-	searchbar.on('searchReturned', function(searchResults){
+	searchbar.on('success', function(searchResults){
 		photos.displaySearchResults(searchResults);
 	});
 
-	searchbar.on('searchClicked', function(term){
-		router.update('/search/' + term, {trigger: true});
+	searchbar.on('click', function(term){
+		router.update('/search/' + term, {trigger: false});
 	});
 
-	router.route(/search\/(.+)/, function(path) {
-    	searchbar.search(path.split('/')[1]);
-  	});
+	photos.on('thumb-click', function(photo){
+		var hash = window.location.hash
+			segments = hash.split('/').splice(0,2);
+		router.update(segments.join('/') + '/' + photo.id);
+	});
+
+	router.on('search', function(term){
+		searchbar.search(term);
+		searchbar.render();
+	});
+
+	router.on('view', function(term, id){
+		if(searchbar.term === term && searchbar.searchComplete){
+			return photos.loadPhoto(id);	
+		}
+		searchbar.search(term);
+		searchbar.on('success', function(){
+			photos.loadPhoto(id);
+		});
+		
+	});
 
 	router.start();
 };

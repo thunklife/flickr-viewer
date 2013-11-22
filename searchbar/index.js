@@ -13,9 +13,10 @@ function SearchBar(element){
 	this.term = '';
 	this.render();
 	this.delegate = new Delegate(this.element);
-	this.delegate.on('click', '.search-button', this.onSearchClicked.bind(this));
-	this.delegate.on('blur', '.search-term', this.onTermEntered.bind(this));
+	this.delegate.on('click', '.search-button', this.click.bind(this));
+	this.delegate.on('blur', '.search-term', this.update.bind(this));
 	this.searchFailed = false;
+	this.searchComplete = false;
 }
 
 inherit(SearchBar, EventEmitter);
@@ -24,7 +25,7 @@ SearchBar.prototype.render = function(){
 	this.element.innerHTML = template(this);
 };
 
-SearchBar.prototype.onTermEntered = function(e){
+SearchBar.prototype.update = function(e){
 	var term = e.target.value;
 	this.term = term || '';
 };
@@ -42,7 +43,8 @@ SearchBar.prototype.search = function(term){
 			crossOrigin: true,
 			success: function (resp){
 				if(resp.photos.photo.length){
-					this.emit('searchReturned', {title: this.term, photos: resp.photos.photo});
+					this.emit('success', {title: this.term, photos: resp.photos.photo});
+					this.searchComplete = true;
 					return;
 				}
 				this.searchFailed = true;
@@ -53,10 +55,10 @@ SearchBar.prototype.search = function(term){
 		});
 }
 
-SearchBar.prototype.onSearchClicked = function(){
+SearchBar.prototype.click = function(){
 	if(this.term){
 		this.search(this.term);
-		this.emit('searchClicked', this.term);
+		this.emit('click', this.term);
 	}
 };
 

@@ -17,7 +17,7 @@ function Thumbnails(element){
 			e.preventDefault();
 			if(!thumb.length) return console.err("WAT?!");
 
-			this.emit('thumbClicked', thumb[0]);
+			this.emit('thumb-click', thumb[0]);
 	}.bind(this));
 }
 
