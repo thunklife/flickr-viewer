@@ -1,24 +1,12 @@
 var LocationBar = require('location-bar'),
 	EventEmitter = require('events').EventEmitter,
 	inherits = require('util').inherits,
+	extend = require('lodash').extend,
 	router;
 
-function Router (){
-	this.location = new LocationBar();
-};
+extend(LocationBar.prototype, EventEmitter.prototype);
 
-inherits(Router, EventEmitter);
-
-Router.prototype.route = function(patter, fn){
-		this.location.route(patter, fn);
-	};
-Router.prototype.update = function(url, options){
-		this.location.update(url, options)
-	};
-Router.prototype.start = function(){
-	this.location.start();
-}
-router = new Router();
+router = new LocationBar();
 
 router.route(/search\/(.+)/, function(path) {
 	var term = path.split('/')[1];
