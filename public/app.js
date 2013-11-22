@@ -1,50 +1,79 @@
 ;(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var SearchBar = require('./searchbar'),
-	PhotoViewer = require('./photos'),
-	router = require('./router');
-	domready = require('domready');
+var router = require('./router'),
+	domready = require('domready'),
+	Controller = require('./controller');
 
 function run(){
-	var searchContainer = document.getElementById('search-container'),
-		photosContainer = document.getElementById('photos-container'),
-		searchbar = new SearchBar(searchContainer);
-		photos = new PhotoViewer(photosContainer);
-
-	searchbar.on('success', function(searchResults){
-		photos.displaySearchResults(searchResults);
-	});
-
-	searchbar.on('click', function(term){
+	var controller = new Controller();
+	controller.on('search', function(term){
 		router.update('/search/' + term, {trigger: false});
 	});
 
-	photos.on('thumb-click', function(photo){
-		var hash = window.location.hash
+	controller.on('thumb-click', function(photo){
+		var hash = window.location.hash,
 			segments = hash.split('/').splice(0,2);
 		router.update(segments.join('/') + '/' + photo.id);
-	});
+	})
 
 	router.on('search', function(term){
-		searchbar.search(term);
-		searchbar.render();
+		controller.search(term);
 	});
 
 	router.on('view', function(term, id){
-		if(searchbar.term === term && searchbar.searchComplete){
-			return photos.loadPhoto(id);	
-		}
-		searchbar.search(term);
-		searchbar.on('success', function(){
-			photos.loadPhoto(id);
-		});
-		
+		controller.viewImage(term,id);
 	});
 
 	router.start();
 };
 
 domready(run);
-},{"./photos":16,"./router":22,"./searchbar":23,"domready":7}],2:[function(require,module,exports){
+},{"./controller":2,"./router":23,"domready":8}],2:[function(require,module,exports){
+var SearchBar = require('./searchbar'),
+	PhotoViewer = require('./photos'),
+	EventEmitter = require('events').EventEmitter,
+	inherits = require('util').inherits;
+	
+
+function Controller(){
+	var searchContainer = document.getElementById('search-container'),
+		photosContainer = document.getElementById('photos-container');
+	
+	this.searchbar = new SearchBar(searchContainer);
+	this.photos = new PhotoViewer(photosContainer);
+
+	this.searchbar.on('success', function(searchResults){
+		this.photos.displaySearchResults(searchResults);
+	});
+
+	this.searchbar.on('click', function(term){
+		this.emit('search', term)
+	}.bind(this));
+
+	this.photos.on('thumb-click', function(photo){
+		this.emit('thumb-click', photo);
+	}.bind(this));
+}
+
+inherits(Controller, EventEmitter);
+
+Controller.prototype.search = function(term){
+	this.searchbar.search(term);
+	this.searchbar.render();
+}
+
+Controller.prototype.viewImage = function(term,id){
+	if(searchbar.term === term && searchbar.searchComplete){
+			return photos.loadPhoto(id);
+		}
+	this.search(term);
+	searchbar.on('success', function(){
+		photos.loadPhoto(id);
+	});
+}
+
+module.exports = Controller;
+
+},{"./photos":17,"./searchbar":24,"events":4,"util":5}],3:[function(require,module,exports){
 
 
 //
@@ -262,7 +291,7 @@ if (typeof Object.getOwnPropertyDescriptor === 'function') {
   exports.getOwnPropertyDescriptor = valueObject;
 }
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -543,7 +572,7 @@ EventEmitter.listenerCount = function(emitter, type) {
     ret = emitter._events[type].length;
   return ret;
 };
-},{"util":4}],4:[function(require,module,exports){
+},{"util":5}],5:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1088,7 +1117,7 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-},{"_shims":2}],5:[function(require,module,exports){
+},{"_shims":3}],6:[function(require,module,exports){
 /*jshint browser:true, node:true*/
 
 'use strict';
@@ -1512,7 +1541,7 @@ Delegate.prototype.destroy = function() {
   this.root();
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*jshint browser:true, node:true*/
 
 'use strict';
@@ -1533,7 +1562,7 @@ module.exports = function(root) {
 
 module.exports.Delegate = Delegate;
 
-},{"./delegate":5}],7:[function(require,module,exports){
+},{"./delegate":6}],8:[function(require,module,exports){
 /*!
   * domready (c) Dustin Diaz 2012 - License MIT
   */
@@ -1590,7 +1619,7 @@ module.exports.Delegate = Delegate;
     })
 })
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /*jshint eqnull: true */
 
 module.exports.create = function() {
@@ -1758,7 +1787,7 @@ Handlebars.registerHelper('log', function(context, options) {
 return Handlebars;
 };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 exports.attach = function(Handlebars) {
 
 // BEGIN(BROWSER)
@@ -1866,7 +1895,7 @@ return Handlebars;
 
 };
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 exports.attach = function(Handlebars) {
 
 var toString = Object.prototype.toString;
@@ -1951,7 +1980,7 @@ Handlebars.Utils = {
 return Handlebars;
 };
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var hbsBase = require("handlebars/lib/handlebars/base");
 var hbsUtils = require("handlebars/lib/handlebars/utils");
 var hbsRuntime = require("handlebars/lib/handlebars/runtime");
@@ -1962,7 +1991,7 @@ hbsRuntime.attach(Handlebars);
 
 module.exports = Handlebars;
 
-},{"handlebars/lib/handlebars/base":8,"handlebars/lib/handlebars/runtime":9,"handlebars/lib/handlebars/utils":10}],12:[function(require,module,exports){
+},{"handlebars/lib/handlebars/base":9,"handlebars/lib/handlebars/runtime":10,"handlebars/lib/handlebars/utils":11}],13:[function(require,module,exports){
 // LocationBar module extracted from Backbone.js 1.0.0
 // (actually it's commit f6fa0cb87e26bb3d1b7f47144fd720d1ab48e88f)
 //
@@ -2296,7 +2325,7 @@ define(function() {
   return LocationBar;
 });
 })(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};/**
  * @license
  * Lo-Dash 2.3.0 (Custom Build) <http://lodash.com/>
@@ -8889,7 +8918,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
   }
 }.call(this));
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 /*! version: 0.9.3 */
 /*!
   * Reqwest! A general purpose XHR connection manager
@@ -9488,7 +9517,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
   return reqwest
 });
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -9505,7 +9534,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   return buffer;
   });
 
-},{"hbsfy/runtime":11}],16:[function(require,module,exports){
+},{"hbsfy/runtime":12}],17:[function(require,module,exports){
 var Thumbnails = require('./thumbs'),
 	Viewer = require('./viewer'),
 	EventEmitter = require('events').EventEmitter,
@@ -9552,7 +9581,7 @@ Photos.prototype.loadPhoto = function(id){
 }
 
 module.exports = Photos;
-},{"./header.hbs":15,"./thumbs":18,"./viewer":20,"events":3,"util":4}],17:[function(require,module,exports){
+},{"./header.hbs":16,"./thumbs":19,"./viewer":21,"events":4,"util":5}],18:[function(require,module,exports){
 function Photo (photoInfo){
 		this.id = photoInfo.id;
 		this.meta = photoInfo || {farm: "", server: "", secret:""};
@@ -9562,7 +9591,7 @@ function Photo (photoInfo){
 	}
 
 module.exports = Photo;
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var Delegate = require('dom-delegate'),
 	EventEmitter = require('events').EventEmitter,
 	Photo = require('../photo'),
@@ -9596,7 +9625,7 @@ Thumbnails.prototype.render = function(photos){
 }
 
 module.exports = Thumbnails;
-},{"../photo":17,"./thumbs.hbs":19,"dom-delegate":6,"events":3,"util":4}],19:[function(require,module,exports){
+},{"../photo":18,"./thumbs.hbs":20,"dom-delegate":7,"events":4,"util":5}],20:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -9630,7 +9659,7 @@ function program1(depth0,data) {
   return buffer;
   });
 
-},{"hbsfy/runtime":11}],20:[function(require,module,exports){
+},{"hbsfy/runtime":12}],21:[function(require,module,exports){
 var template = require('./viewer.hbs');
 
 function Viewer(element){
@@ -9644,7 +9673,7 @@ Viewer.prototype.render = function(photo){
 }
 
 module.exports = Viewer;
-},{"./viewer.hbs":21}],21:[function(require,module,exports){
+},{"./viewer.hbs":22}],22:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -9661,7 +9690,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   return buffer;
   });
 
-},{"hbsfy/runtime":11}],22:[function(require,module,exports){
+},{"hbsfy/runtime":12}],23:[function(require,module,exports){
 var LocationBar = require('location-bar'),
 	EventEmitter = require('events').EventEmitter,
 	inherits = require('util').inherits,
@@ -9683,7 +9712,7 @@ router.route(/search\/(.+)\/(\d+)/, function(path){
 }.bind(router));
 
 module.exports = router;
-},{"events":3,"location-bar":12,"lodash":13,"util":4}],23:[function(require,module,exports){
+},{"events":4,"location-bar":13,"lodash":14,"util":5}],24:[function(require,module,exports){
 var Delegate = require('dom-delegate'),
 	EventEmitter = require('events').EventEmitter,
 	inherit = require('util').inherits,
@@ -9749,7 +9778,7 @@ SearchBar.prototype.click = function(){
 };
 
 module.exports = SearchBar;
-},{"./search.hbs":24,"dom-delegate":6,"events":3,"reqwest":14,"util":4}],24:[function(require,module,exports){
+},{"./search.hbs":25,"dom-delegate":7,"events":4,"reqwest":15,"util":5}],25:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -9766,5 +9795,5 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   return buffer;
   });
 
-},{"hbsfy/runtime":11}]},{},[1])
+},{"hbsfy/runtime":12}]},{},[1])
 ;
