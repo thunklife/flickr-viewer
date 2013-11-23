@@ -30,4 +30,8 @@ Thumbnails.prototype.render = function(photos){
 	this.element.innerHTML = template(this);
 }
 
+Thumbnails.prototype.detach = function(){
+	this.element.innerHTML = '';
+}
+
 module.exports = Thumbnails;

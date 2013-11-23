@@ -23,7 +23,13 @@ inherit(SearchBar, EventEmitter);
 
 SearchBar.prototype.render = function(){
 	this.element.innerHTML = template(this);
+	this.emit('render');
 };
+
+SearchBar.prototype.detach = function(){
+	this.term = '';
+	this.render();
+}
 
 SearchBar.prototype.update = function(e){
 	var term = e.target.value;
@@ -32,8 +38,9 @@ SearchBar.prototype.update = function(e){
 
 SearchBar.prototype.search = function(term){
 	var url;
-	if(!term) return;
-	this.term = term;
+
+	if(this.term === term) return;
+	this.term = term || this.term;
 
 	url = baseUrl + "&method=flickr.tags.getClusterPhotos&tag=" + this.term + urlSuffix;	
 		reqwest({
@@ -57,7 +64,7 @@ SearchBar.prototype.search = function(term){
 
 SearchBar.prototype.click = function(){
 	if(this.term){
-		this.search(this.term);
+		this.search();
 		this.emit('click', this.term);
 	}
 };

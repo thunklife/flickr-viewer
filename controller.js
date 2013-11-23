@@ -13,7 +13,7 @@ function Controller(){
 
 	this.searchbar.on('success', function(searchResults){
 		this.photos.displaySearchResults(searchResults);
-	});
+	}.bind(this));
 
 	this.searchbar.on('click', function(term){
 		this.emit('search', term)
@@ -27,18 +27,25 @@ function Controller(){
 inherits(Controller, EventEmitter);
 
 Controller.prototype.search = function(term){
+	if(this.searchbar.term === term) return this.photos.detach('viewer');
 	this.searchbar.search(term);
 	this.searchbar.render();
+	
 }
 
 Controller.prototype.viewImage = function(term,id){
-	if(searchbar.term === term && searchbar.searchComplete){
-			return photos.loadPhoto(id);
+	if(this.searchbar.term === term && this.searchbar.searchComplete){
+			return this.photos.loadPhoto(id);
 		}
 	this.search(term);
-	searchbar.on('success', function(){
-		photos.loadPhoto(id);
-	});
+	this.searchbar.on('success', function(){
+		this.photos.loadPhoto(id);
+	}.bind(this));
+}
+
+Controller.prototype.detachAll = function(){
+	this.searchbar.detach();
+	this.photos.detach();
 }
 
 module.exports = Controller;

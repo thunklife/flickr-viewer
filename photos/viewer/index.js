@@ -8,6 +8,10 @@ function Viewer(element){
 Viewer.prototype.render = function(photo){
 	this.photo = photo
 	this.element.innerHTML = template(this.photo);
+};
+
+Viewer.prototype.detach = function(){
+	this.element.innerHTML = '';
 }
 
 module.exports = Viewer;

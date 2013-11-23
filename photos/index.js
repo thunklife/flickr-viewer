@@ -43,4 +43,12 @@ Photos.prototype.loadPhoto = function(id){
 	this.renderImage(photos[0]);
 }
 
+Photos.prototype.detach = function(name){
+	if(name) return this[name].detach();
+	
+	this.thumbNails.detach();
+	this.viewer.detach();
+	this.header.innerHTML = '';
+}
+
 module.exports = Photos;

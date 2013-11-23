@@ -3,7 +3,9 @@ var router = require('./router'),
 	domready = require('domready'),
 	Controller = require('./controller');
 
+
 function run(){
+
 	var controller = new Controller();
 	controller.on('search', function(term){
 		router.update('/search/' + term, {trigger: false});
@@ -13,7 +15,11 @@ function run(){
 		var hash = window.location.hash,
 			segments = hash.split('/').splice(0,2);
 		router.update(segments.join('/') + '/' + photo.id);
-	})
+	});
+
+	router.on('home', function(){
+		controller.detachAll();
+	});
 
 	router.on('search', function(term){
 		controller.search(term);
@@ -43,7 +49,7 @@ function Controller(){
 
 	this.searchbar.on('success', function(searchResults){
 		this.photos.displaySearchResults(searchResults);
-	});
+	}.bind(this));
 
 	this.searchbar.on('click', function(term){
 		this.emit('search', term)
@@ -57,18 +63,25 @@ function Controller(){
 inherits(Controller, EventEmitter);
 
 Controller.prototype.search = function(term){
+	if(this.searchbar.term === term) return this.photos.detach('viewer');
 	this.searchbar.search(term);
 	this.searchbar.render();
+	
 }
 
 Controller.prototype.viewImage = function(term,id){
-	if(searchbar.term === term && searchbar.searchComplete){
-			return photos.loadPhoto(id);
+	if(this.searchbar.term === term && this.searchbar.searchComplete){
+			return this.photos.loadPhoto(id);
 		}
 	this.search(term);
-	searchbar.on('success', function(){
-		photos.loadPhoto(id);
-	});
+	this.searchbar.on('success', function(){
+		this.photos.loadPhoto(id);
+	}.bind(this));
+}
+
+Controller.prototype.detachAll = function(){
+	this.searchbar.detach();
+	this.photos.detach();
 }
 
 module.exports = Controller;
@@ -9580,6 +9593,14 @@ Photos.prototype.loadPhoto = function(id){
 	this.renderImage(photos[0]);
 }
 
+Photos.prototype.detach = function(name){
+	if(name) return this[name].detach();
+	
+	this.thumbNails.detach();
+	this.viewer.detach();
+	this.header.innerHTML = '';
+}
+
 module.exports = Photos;
 },{"./header.hbs":16,"./thumbs":19,"./viewer":21,"events":4,"util":5}],18:[function(require,module,exports){
 function Photo (photoInfo){
@@ -9622,6 +9643,10 @@ Thumbnails.prototype.render = function(photos){
 		return new Photo(photo);
 	});
 	this.element.innerHTML = template(this);
+}
+
+Thumbnails.prototype.detach = function(){
+	this.element.innerHTML = '';
 }
 
 module.exports = Thumbnails;
@@ -9670,6 +9695,10 @@ function Viewer(element){
 Viewer.prototype.render = function(photo){
 	this.photo = photo
 	this.element.innerHTML = template(this.photo);
+};
+
+Viewer.prototype.detach = function(){
+	this.element.innerHTML = '';
 }
 
 module.exports = Viewer;
@@ -9701,10 +9730,14 @@ extend(LocationBar.prototype, EventEmitter.prototype);
 
 router = new LocationBar();
 
+router.route(/^$/, function(){
+	this.emit('home');
+}.bind(router));
+
 router.route(/search\/(.+)/, function(path) {
 	var term = path.split('/')[1];
     	this.emit('search', term);
-    }.bind(router))
+}.bind(router));
 
 router.route(/search\/(.+)\/(\d+)/, function(path){
 	var segements = path.split('/');
@@ -9738,7 +9771,13 @@ inherit(SearchBar, EventEmitter);
 
 SearchBar.prototype.render = function(){
 	this.element.innerHTML = template(this);
+	this.emit('render');
 };
+
+SearchBar.prototype.detach = function(){
+	this.term = '';
+	this.render();
+}
 
 SearchBar.prototype.update = function(e){
 	var term = e.target.value;
@@ -9747,8 +9786,9 @@ SearchBar.prototype.update = function(e){
 
 SearchBar.prototype.search = function(term){
 	var url;
-	if(!term) return;
-	this.term = term;
+
+	if(this.term === term) return;
+	this.term = term || this.term;
 
 	url = baseUrl + "&method=flickr.tags.getClusterPhotos&tag=" + this.term + urlSuffix;	
 		reqwest({
@@ -9772,7 +9812,7 @@ SearchBar.prototype.search = function(term){
 
 SearchBar.prototype.click = function(){
 	if(this.term){
-		this.search(this.term);
+		this.search();
 		this.emit('click', this.term);
 	}
 };
