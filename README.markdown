@@ -18,23 +18,38 @@ install
 Just clone the repo, and:
 
 ```
-sudo npm install
+npm install
 ```
 
 build
 =====
 
-The bundled/minified of the JS and CSS is in the repo, but if you want to play around, just:
+The bundled/minified of the JS and CSS is in the repo, but if you want to play around, there are two ways to build:
+
+#####watch
+You can build and run the app using
 
 ```
 npm run watch
 ```
-
-The above with run:
+This uses watchify and catw to keep an eye on your JS and CSS and update the public files. The above command is just shorthand for
 
 ```
 npm run watch-js && npm run watch-css
 ```
+#####build
+To build a 'production' version of the app run:
+
+```
+npm run build
+```
+This will concat and minify the JS, and concat the CSS. No watching. Again, this command is just shorthand for
+
+```
+npm run build-js && npm run build-css
+```
+
+The above is shamelessly stolen from [substack](http://substack.net/task_automation_with_npm_run)
 
 run it
 ======
