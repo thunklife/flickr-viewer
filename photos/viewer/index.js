@@ -1,17 +1,9 @@
-var template = require('./viewer.hbs');
+var presenter = require('../../lib/presenter')
+	template = require('./index.hbs');
 
-function Viewer(element){
-	this.element = element;
-	this.photo;
-}
-
-Viewer.prototype.render = function(photo){
-	this.photo = photo
-	this.element.innerHTML = template(this.photo);
+module.exports = function(element){
+	return presenter({
+		element: element,
+		template: template
+	});
 };
-
-Viewer.prototype.detach = function(){
-	this.element.innerHTML = '';
-}
-
-module.exports = Viewer;

@@ -9575,7 +9575,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 
 },{"hbsfy/runtime":13}],18:[function(require,module,exports){
 var thumbnails = require('./thumbs'),
-	Viewer = require('./viewer'),
+	viewer = require('./viewer'),
 	EventEmitter = require('events').EventEmitter,
 	template = require('./header.hbs'),
 	inherit = require('util').inherits;
@@ -9588,7 +9588,7 @@ function Photos(element){
 	this.title = "";
 	this.header = element.querySelector('#results-header');
 	this.thumbNails = thumbnails(thumbsContainer);
-	this.viewer = new Viewer(imageContainer);
+	this.viewer = viewer(imageContainer);
 }
 
 inherit(Photos, EventEmitter);
@@ -9628,7 +9628,7 @@ Photos.prototype.detach = function(name){
 }
 
 module.exports = Photos;
-},{"./header.hbs":17,"./thumbs":20,"./viewer":22,"events":5,"util":6}],19:[function(require,module,exports){
+},{"./header.hbs":17,"./thumbs":21,"./viewer":23,"events":5,"util":6}],19:[function(require,module,exports){
 function Photo (photoInfo){
 		this.id = photoInfo.id;
 		this.meta = photoInfo || {farm: "", server: "", secret:""};
@@ -9639,37 +9639,6 @@ function Photo (photoInfo){
 
 module.exports = Photo;
 },{}],20:[function(require,module,exports){
-var Photo = require('../photo'),
-	template = require('./thumbs.hbs'),
-	presenter = require('../../lib/presenter');
-
-module.exports = function(element){
-	var view = presenter({
-		element: element,
-		template: template,
-		beforeRender: function mapPhotos(data){
-			this.photos = data.map(function(photo){
-				return new Photo(photo);
-			});
-
-			return this;
-		}
-	});
-
-	view.photos = [];
-	view.delegate.on('click', '.image-link', function(e){
-		var id = e.target.id,
-			thumb = view.photos.filter(function(photo){
-				return photo.id === id;
-			});
-			e.preventDefault();
-			if(!thumb.length) return console.error('WAT?!');
-			view.emit('thumb-click', thumb[0])
-	})
-
-	return view;
-};
-},{"../../lib/presenter":3,"../photo":19,"./thumbs.hbs":21}],21:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -9703,25 +9672,38 @@ function program1(depth0,data) {
   return buffer;
   });
 
-},{"hbsfy/runtime":13}],22:[function(require,module,exports){
-var template = require('./viewer.hbs');
+},{"hbsfy/runtime":13}],21:[function(require,module,exports){
+var Photo = require('../photo'),
+	template = require('./index.hbs'),
+	presenter = require('../../lib/presenter');
 
-function Viewer(element){
-	this.element = element;
-	this.photo;
-}
+module.exports = function(element){
+	var view = presenter({
+		element: element,
+		template: template,
+		beforeRender: function mapPhotos(data){
+			this.photos = data.map(function(photo){
+				return new Photo(photo);
+			});
 
-Viewer.prototype.render = function(photo){
-	this.photo = photo
-	this.element.innerHTML = template(this.photo);
+			return this;
+		}
+	});
+
+	view.photos = [];
+	view.delegate.on('click', '.image-link', function(e){
+		var id = e.target.id,
+			thumb = view.photos.filter(function(photo){
+				return photo.id === id;
+			});
+			e.preventDefault();
+			if(!thumb.length) return console.error('WAT?!');
+			view.emit('thumb-click', thumb[0])
+	})
+
+	return view;
 };
-
-Viewer.prototype.detach = function(){
-	this.element.innerHTML = '';
-}
-
-module.exports = Viewer;
-},{"./viewer.hbs":23}],23:[function(require,module,exports){
+},{"../../lib/presenter":3,"../photo":19,"./index.hbs":20}],22:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -9738,7 +9720,17 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   return buffer;
   });
 
-},{"hbsfy/runtime":13}],24:[function(require,module,exports){
+},{"hbsfy/runtime":13}],23:[function(require,module,exports){
+var presenter = require('../../lib/presenter')
+	template = require('./index.hbs');
+
+module.exports = function(element){
+	return presenter({
+		element: element,
+		template: template
+	});
+};
+},{"../../lib/presenter":3,"./index.hbs":22}],24:[function(require,module,exports){
 var LocationBar = require('location-bar'),
 	EventEmitter = require('events').EventEmitter,
 	inherits = require('util').inherits,

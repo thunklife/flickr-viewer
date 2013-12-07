@@ -1,5 +1,5 @@
 var thumbnails = require('./thumbs'),
-	Viewer = require('./viewer'),
+	viewer = require('./viewer'),
 	EventEmitter = require('events').EventEmitter,
 	template = require('./header.hbs'),
 	inherit = require('util').inherits;
@@ -12,7 +12,7 @@ function Photos(element){
 	this.title = "";
 	this.header = element.querySelector('#results-header');
 	this.thumbNails = thumbnails(thumbsContainer);
-	this.viewer = new Viewer(imageContainer);
+	this.viewer = viewer(imageContainer);
 }
 
 inherit(Photos, EventEmitter);

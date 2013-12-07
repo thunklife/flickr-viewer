@@ -1,5 +1,5 @@
 var Photo = require('../photo'),
-	template = require('./thumbs.hbs'),
+	template = require('./index.hbs'),
 	presenter = require('../../lib/presenter');
 
 module.exports = function(element){
