@@ -1,4 +1,4 @@
-var Thumbnails = require('./thumbs'),
+var thumbnails = require('./thumbs'),
 	Viewer = require('./viewer'),
 	EventEmitter = require('events').EventEmitter,
 	template = require('./header.hbs'),
@@ -11,7 +11,7 @@ function Photos(element){
 	EventEmitter.call(this);	
 	this.title = "";
 	this.header = element.querySelector('#results-header');
-	this.thumbNails = new Thumbnails(thumbsContainer);
+	this.thumbNails = thumbnails(thumbsContainer);
 	this.viewer = new Viewer(imageContainer);
 }
 

@@ -1,37 +1,30 @@
-var Delegate = require('dom-delegate'),
-	EventEmitter = require('events').EventEmitter,
-	Photo = require('../photo'),
-	inherits = require('util').inherits,
-	template = require('./thumbs.hbs');
+var Photo = require('../photo'),
+	template = require('./thumbs.hbs'),
+	presenter = require('../../lib/presenter');
 
-function Thumbnails(element){
-	EventEmitter.call(this);
-	this.element = element;
-	this.photos = [];
-	this.delegate = new Delegate(this.element);
-	this.delegate.on('click', '.image-link', function(e){
+module.exports = function(element){
+	var view = presenter({
+		element: element,
+		template: template,
+		beforeRender: function mapPhotos(data){
+			this.photos = data.map(function(photo){
+				return new Photo(photo);
+			});
+
+			return this;
+		}
+	});
+
+	view.photos = [];
+	view.delegate.on('click', '.image-link', function(e){
 		var id = e.target.id,
-			thumb = this.photos.filter(function(photo){
+			thumb = view.photos.filter(function(photo){
 				return photo.id === id;
 			});
 			e.preventDefault();
-			if(!thumb.length) return console.err("WAT?!");
+			if(!thumb.length) return console.error('WAT?!');
+			view.emit('thumb-click', thumb[0])
+	})
 
-			this.emit('thumb-click', thumb[0]);
-	}.bind(this));
-}
-
-inherits(Thumbnails, EventEmitter);
-
-Thumbnails.prototype.render = function(photos){
-	this.photos = photos.map(function(photo){
-		return new Photo(photo);
-	});
-	this.element.innerHTML = template(this);
-}
-
-Thumbnails.prototype.detach = function(){
-	this.element.innerHTML = '';
-}
-
-module.exports = Thumbnails;
+	return view;
+};
