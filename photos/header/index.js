@@ -1,9 +1,13 @@
-var component = require('../../lib/component')
+var component = require('../../lib/component'),
 	template = require('./index.hbs');
 
 module.exports = function(element){
-	return component({
+	var header = component({
 		element: element,
 		template: template
 	});
-};
+
+	header.title='';
+
+	return header;
+}

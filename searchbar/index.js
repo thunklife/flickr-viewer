@@ -1,72 +1,60 @@
-var Delegate = require('dom-delegate'),
-	EventEmitter = require('events').EventEmitter,
-	inherit = require('util').inherits,
-	template = require('./search.hbs'),
+var component = require('../lib/component'),
+	template = require('./index.hbs'),
 	reqwest = require('reqwest'),
 	apiKey = '934910a2c34c06b6b167e1589069c274',
 	baseUrl = "http://api.flickr.com/services/rest/?&api_key=" + apiKey;
 	urlSuffix = "&format=json&nojsoncallback=1"
 
-function SearchBar(element){
-	EventEmitter.call(this);
-	this.element = element;
-	this.term = '';
-	this.render();
-	this.delegate = new Delegate(this.element);
-	this.delegate.on('click', '.search-button', this.click.bind(this));
-	this.delegate.on('blur', '.search-term', this.update.bind(this));
-	this.searchFailed = false;
-	this.searchComplete = false;
-}
+module.exports = function(element){
+	var search = component({
+		element: element,
+		template: template
+	});
 
-inherit(SearchBar, EventEmitter);
+	search.term = '';	
 
-SearchBar.prototype.render = function(){
-	this.element.innerHTML = template(this);
-	this.emit('render');
-};
+	search.search = function(term){
+		var url;
 
-SearchBar.prototype.detach = function(){
-	this.term = '';
-	this.render();
-}
+		if(this.term === term) return;
+		this.term = term || this.term;
 
-SearchBar.prototype.update = function(e){
-	var term = e.target.value;
-	this.term = term || '';
-};
-
-SearchBar.prototype.search = function(term){
-	var url;
-
-	if(this.term === term) return;
-	this.term = term || this.term;
-
-	url = baseUrl + "&method=flickr.tags.getClusterPhotos&tag=" + this.term + urlSuffix;	
-		reqwest({
-			url: url,
-			method: 'get',
-			type: 'json',
-			crossOrigin: true,
-			success: function (resp){
-				if(resp.photos.photo.length){
-					this.emit('success', {title: this.term, photos: resp.photos.photo});
-					this.searchComplete = true;
-					return;
+		url = baseUrl + "&method=flickr.tags.getClusterPhotos&tag=" + this.term + urlSuffix;	
+			reqwest({
+				url: url,
+				method: 'get',
+				type: 'json',
+				crossOrigin: true,
+				success: function (resp){
+					if(resp.photos.photo.length){
+						this.emit('success', {title: this.term, photos: resp.photos.photo});
+						this.searchComplete = true;
+						return;
+					}
+					this.searchFailed = true;
+				}.bind(this),
+				error: function (err){
+					console.log(err);
 				}
-				this.searchFailed = true;
-			}.bind(this),
-			error: function (err){
-				console.log(err);
-			}
-		});
-}
+			});
+	};
 
-SearchBar.prototype.click = function(){
-	if(this.term){
-		this.search();
-		this.emit('click', this.term);
-	}
+	search.update = function(e){
+		var term = e.target.value;
+		this.term = term || '';
+	};
+
+	search.click = function(){
+		if(this.term){
+			this.search();
+			this.emit('click', this.term);
+		}
+	};
+	search.delegate.on('click', '.search-button', search.click.bind(search));
+	search.delegate.on('submit', 'form', search.click.bind(search));
+	search.delegate.on('blur', '.search-term', search.update.bind(search));
+	search.detach = function(){
+		search.term = '';
+	};
+	return search;
 };
-
-module.exports = SearchBar;

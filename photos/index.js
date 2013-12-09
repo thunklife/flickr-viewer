@@ -1,28 +1,33 @@
 var thumbnails = require('./thumbs'),
 	viewer = require('./viewer'),
+	header = require('./header'),
 	EventEmitter = require('events').EventEmitter,
-	template = require('./header.hbs'),
 	inherit = require('util').inherits;
 
 function Photos(element){
-	var thumbsContainer = element.querySelector('#thumbs-container'),
-		imageContainer = element.querySelector('#image-container');
+	var thumbsEl = element.querySelector('#thumbs-container'),
+		viewerEl = element.querySelector('#image-container'),
+		headerEl = element.querySelector('#results-header');
 	
 	EventEmitter.call(this);	
-	this.title = "";
-	this.header = element.querySelector('#results-header');
-	this.thumbNails = thumbnails(thumbsContainer);
-	this.viewer = viewer(imageContainer);
+	this.components = [];
+	this.header;
+	this.thumbNails;
+	this.viewer;
+
+	this.components.push(this.header = header(headerEl));
+	this.components.push(this.thumbNails = thumbnails(thumbsEl));
+	this.components.push(this.viewer = viewer(viewerEl))
 }
 
 inherit(Photos, EventEmitter);
 
 Photos.prototype.render = function(){
-	this.header.innerHTML = template(this);
+	this.header.render();
 }
 
 Photos.prototype.displaySearchResults = function(searchResults){
-	this.title = searchResults.title;
+	this.header.title = searchResults.title;
 	this.render();
 	this.thumbNails.render(searchResults.photos);	
 	this.thumbNails.on('thumb-click', function(photo){
@@ -46,9 +51,9 @@ Photos.prototype.loadPhoto = function(id){
 Photos.prototype.detach = function(name){
 	if(name) return this[name].detach();
 	
-	this.thumbNails.detach();
-	this.viewer.detach();
-	this.header.innerHTML = '';
+	this.components.forEach(function(component){
+		component.detach();
+	})
 }
 
 module.exports = Photos;

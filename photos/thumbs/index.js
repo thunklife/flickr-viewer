@@ -1,9 +1,9 @@
 var Photo = require('../photo'),
 	template = require('./index.hbs'),
-	presenter = require('../../lib/presenter');
+	component = require('../../lib/component');
 
 module.exports = function(element){
-	var view = presenter({
+	var view = component({
 		element: element,
 		template: template,
 		beforeRender: function mapPhotos(data){

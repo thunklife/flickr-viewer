@@ -1,4 +1,4 @@
-var SearchBar = require('./searchbar'),
+var searchbar = require('./searchbar'),
 	PhotoViewer = require('./photos'),
 	EventEmitter = require('events').EventEmitter,
 	inherits = require('util').inherits;
@@ -8,7 +8,7 @@ function Controller(){
 	var searchContainer = document.getElementById('search-container'),
 		photosContainer = document.getElementById('photos-container');
 	
-	this.searchbar = new SearchBar(searchContainer);
+	this.searchbar = searchbar(searchContainer);
 	this.photos = new PhotoViewer(photosContainer);
 
 	this.searchbar.on('success', function(searchResults){
@@ -22,6 +22,8 @@ function Controller(){
 	this.photos.on('thumb-click', function(photo){
 		this.emit('thumb-click', photo);
 	}.bind(this));
+
+	this.searchbar.render();
 }
 
 inherits(Controller, EventEmitter);

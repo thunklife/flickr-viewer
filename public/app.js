@@ -33,8 +33,8 @@ function run(){
 };
 
 domready(run);
-},{"./controller":2,"./router":24,"domready":9}],2:[function(require,module,exports){
-var SearchBar = require('./searchbar'),
+},{"./controller":2,"./router":25,"domready":9}],2:[function(require,module,exports){
+var searchbar = require('./searchbar'),
 	PhotoViewer = require('./photos'),
 	EventEmitter = require('events').EventEmitter,
 	inherits = require('util').inherits;
@@ -44,7 +44,7 @@ function Controller(){
 	var searchContainer = document.getElementById('search-container'),
 		photosContainer = document.getElementById('photos-container');
 	
-	this.searchbar = new SearchBar(searchContainer);
+	this.searchbar = searchbar(searchContainer);
 	this.photos = new PhotoViewer(photosContainer);
 
 	this.searchbar.on('success', function(searchResults){
@@ -58,6 +58,8 @@ function Controller(){
 	this.photos.on('thumb-click', function(photo){
 		this.emit('thumb-click', photo);
 	}.bind(this));
+
+	this.searchbar.render();
 }
 
 inherits(Controller, EventEmitter);
@@ -86,30 +88,31 @@ Controller.prototype.detachAll = function(){
 
 module.exports = Controller;
 
-},{"./photos":18,"./searchbar":25,"events":5,"util":6}],3:[function(require,module,exports){
+},{"./photos":19,"./searchbar":27,"events":5,"util":6}],3:[function(require,module,exports){
 var inherit = require('util').inherits,
 	EventEmitter = require('events').EventEmitter,
 	Delegate = require('dom-delegate'),
 	noop = function(data){return data;};
-module.exports = function presenter(options){
-	return new Presenter(options);
+module.exports = function component(options){
+	return new Component(options);
 };
 
-function Presenter(options){
+function Component(options){
 	this.element = options.element || document.body;
 	this.template = options.template;
 	this.beforeRender = options.beforeRender || noop;
 	this.delegate = new Delegate(this.element);
 }
 
-inherit(Presenter, EventEmitter);
+inherit(Component, EventEmitter);
 
-Presenter.prototype.render = function(data){
+Component.prototype.render = function(data){
+	data = data || this;
 	data = this.beforeRender.call(this, data);
 	this.element.innerHTML = this.template(data);
 }
 
-Presenter.prototype.detach = function(){
+Component.prototype.detach = function(){
 	this.element.innerHTML = '';
 }
 },{"dom-delegate":8,"events":5,"util":6}],4:[function(require,module,exports){
@@ -9574,31 +9577,50 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   });
 
 },{"hbsfy/runtime":13}],18:[function(require,module,exports){
+var component = require('../../lib/component'),
+	template = require('./index.hbs');
+
+module.exports = function(element){
+	var header = component({
+		element: element,
+		template: template
+	});
+
+	header.title='';
+
+	return header;
+}
+},{"../../lib/component":3,"./index.hbs":17}],19:[function(require,module,exports){
 var thumbnails = require('./thumbs'),
 	viewer = require('./viewer'),
+	header = require('./header'),
 	EventEmitter = require('events').EventEmitter,
-	template = require('./header.hbs'),
 	inherit = require('util').inherits;
 
 function Photos(element){
-	var thumbsContainer = element.querySelector('#thumbs-container'),
-		imageContainer = element.querySelector('#image-container');
+	var thumbsEl = element.querySelector('#thumbs-container'),
+		viewerEl = element.querySelector('#image-container'),
+		headerEl = element.querySelector('#results-header');
 	
 	EventEmitter.call(this);	
-	this.title = "";
-	this.header = element.querySelector('#results-header');
-	this.thumbNails = thumbnails(thumbsContainer);
-	this.viewer = viewer(imageContainer);
+	this.components = [];
+	this.header;
+	this.thumbNails;
+	this.viewer;
+
+	this.components.push(this.header = header(headerEl));
+	this.components.push(this.thumbNails = thumbnails(thumbsEl));
+	this.components.push(this.viewer = viewer(viewerEl))
 }
 
 inherit(Photos, EventEmitter);
 
 Photos.prototype.render = function(){
-	this.header.innerHTML = template(this);
+	this.header.render();
 }
 
 Photos.prototype.displaySearchResults = function(searchResults){
-	this.title = searchResults.title;
+	this.header.title = searchResults.title;
 	this.render();
 	this.thumbNails.render(searchResults.photos);	
 	this.thumbNails.on('thumb-click', function(photo){
@@ -9622,13 +9644,13 @@ Photos.prototype.loadPhoto = function(id){
 Photos.prototype.detach = function(name){
 	if(name) return this[name].detach();
 	
-	this.thumbNails.detach();
-	this.viewer.detach();
-	this.header.innerHTML = '';
+	this.components.forEach(function(component){
+		component.detach();
+	})
 }
 
 module.exports = Photos;
-},{"./header.hbs":17,"./thumbs":21,"./viewer":23,"events":5,"util":6}],19:[function(require,module,exports){
+},{"./header":18,"./thumbs":22,"./viewer":24,"events":5,"util":6}],20:[function(require,module,exports){
 function Photo (photoInfo){
 		this.id = photoInfo.id;
 		this.meta = photoInfo || {farm: "", server: "", secret:""};
@@ -9638,7 +9660,7 @@ function Photo (photoInfo){
 	}
 
 module.exports = Photo;
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -9672,13 +9694,13 @@ function program1(depth0,data) {
   return buffer;
   });
 
-},{"hbsfy/runtime":13}],21:[function(require,module,exports){
+},{"hbsfy/runtime":13}],22:[function(require,module,exports){
 var Photo = require('../photo'),
 	template = require('./index.hbs'),
-	presenter = require('../../lib/presenter');
+	component = require('../../lib/component');
 
 module.exports = function(element){
-	var view = presenter({
+	var view = component({
 		element: element,
 		template: template,
 		beforeRender: function mapPhotos(data){
@@ -9703,7 +9725,7 @@ module.exports = function(element){
 
 	return view;
 };
-},{"../../lib/presenter":3,"../photo":19,"./index.hbs":20}],22:[function(require,module,exports){
+},{"../../lib/component":3,"../photo":20,"./index.hbs":21}],23:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -9720,17 +9742,17 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   return buffer;
   });
 
-},{"hbsfy/runtime":13}],23:[function(require,module,exports){
-var presenter = require('../../lib/presenter')
+},{"hbsfy/runtime":13}],24:[function(require,module,exports){
+var component = require('../../lib/component')
 	template = require('./index.hbs');
 
 module.exports = function(element){
-	return presenter({
+	return component({
 		element: element,
 		template: template
 	});
 };
-},{"../../lib/presenter":3,"./index.hbs":22}],24:[function(require,module,exports){
+},{"../../lib/component":3,"./index.hbs":23}],25:[function(require,module,exports){
 var LocationBar = require('location-bar'),
 	EventEmitter = require('events').EventEmitter,
 	inherits = require('util').inherits,
@@ -9756,80 +9778,7 @@ router.route(/search\/(.+)\/(\d+)/, function(path){
 }.bind(router));
 
 module.exports = router;
-},{"events":5,"location-bar":14,"lodash":15,"util":6}],25:[function(require,module,exports){
-var Delegate = require('dom-delegate'),
-	EventEmitter = require('events').EventEmitter,
-	inherit = require('util').inherits,
-	template = require('./search.hbs'),
-	reqwest = require('reqwest'),
-	apiKey = '934910a2c34c06b6b167e1589069c274',
-	baseUrl = "http://api.flickr.com/services/rest/?&api_key=" + apiKey;
-	urlSuffix = "&format=json&nojsoncallback=1"
-
-function SearchBar(element){
-	EventEmitter.call(this);
-	this.element = element;
-	this.term = '';
-	this.render();
-	this.delegate = new Delegate(this.element);
-	this.delegate.on('click', '.search-button', this.click.bind(this));
-	this.delegate.on('blur', '.search-term', this.update.bind(this));
-	this.searchFailed = false;
-	this.searchComplete = false;
-}
-
-inherit(SearchBar, EventEmitter);
-
-SearchBar.prototype.render = function(){
-	this.element.innerHTML = template(this);
-	this.emit('render');
-};
-
-SearchBar.prototype.detach = function(){
-	this.term = '';
-	this.render();
-}
-
-SearchBar.prototype.update = function(e){
-	var term = e.target.value;
-	this.term = term || '';
-};
-
-SearchBar.prototype.search = function(term){
-	var url;
-
-	if(this.term === term) return;
-	this.term = term || this.term;
-
-	url = baseUrl + "&method=flickr.tags.getClusterPhotos&tag=" + this.term + urlSuffix;	
-		reqwest({
-			url: url,
-			method: 'get',
-			type: 'json',
-			crossOrigin: true,
-			success: function (resp){
-				if(resp.photos.photo.length){
-					this.emit('success', {title: this.term, photos: resp.photos.photo});
-					this.searchComplete = true;
-					return;
-				}
-				this.searchFailed = true;
-			}.bind(this),
-			error: function (err){
-				console.log(err);
-			}
-		});
-}
-
-SearchBar.prototype.click = function(){
-	if(this.term){
-		this.search();
-		this.emit('click', this.term);
-	}
-};
-
-module.exports = SearchBar;
-},{"./search.hbs":26,"dom-delegate":8,"events":5,"reqwest":16,"util":6}],26:[function(require,module,exports){
+},{"events":5,"location-bar":14,"lodash":15,"util":6}],26:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -9842,9 +9791,70 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   if (stack1 = helpers.term) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.term; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)
-    + "\"/>\n		</div>\n		<div class=\"small-2 columns\">\n			<button class=\"search-button button prefix\">Search</button>\n		</div>\n	</div>\n</div>";
+    + "\" placeholder=\"Tag Search\"/>\n		</div>\n		<div class=\"small-2 columns\">\n			<button class=\"search-button button prefix\">Search</button>\n		</div>\n	</div>\n</div>";
   return buffer;
   });
 
-},{"hbsfy/runtime":13}]},{},[1])
+},{"hbsfy/runtime":13}],27:[function(require,module,exports){
+var component = require('../lib/component'),
+	template = require('./index.hbs'),
+	reqwest = require('reqwest'),
+	apiKey = '934910a2c34c06b6b167e1589069c274',
+	baseUrl = "http://api.flickr.com/services/rest/?&api_key=" + apiKey;
+	urlSuffix = "&format=json&nojsoncallback=1"
+
+module.exports = function(element){
+	var search = component({
+		element: element,
+		template: template
+	});
+
+	search.term = '';	
+
+	search.search = function(term){
+		var url;
+
+		if(this.term === term) return;
+		this.term = term || this.term;
+
+		url = baseUrl + "&method=flickr.tags.getClusterPhotos&tag=" + this.term + urlSuffix;	
+			reqwest({
+				url: url,
+				method: 'get',
+				type: 'json',
+				crossOrigin: true,
+				success: function (resp){
+					if(resp.photos.photo.length){
+						this.emit('success', {title: this.term, photos: resp.photos.photo});
+						this.searchComplete = true;
+						return;
+					}
+					this.searchFailed = true;
+				}.bind(this),
+				error: function (err){
+					console.log(err);
+				}
+			});
+	};
+
+	search.update = function(e){
+		var term = e.target.value;
+		this.term = term || '';
+	};
+
+	search.click = function(){
+		if(this.term){
+			this.search();
+			this.emit('click', this.term);
+		}
+	};
+	search.delegate.on('click', '.search-button', search.click.bind(search));
+	search.delegate.on('submit', 'form', search.click.bind(search));
+	search.delegate.on('blur', '.search-term', search.update.bind(search));
+	search.detach = function(){
+		search.term = '';
+	};
+	return search;
+};
+},{"../lib/component":3,"./index.hbs":26,"reqwest":16}]},{},[1])
 ;
