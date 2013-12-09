@@ -9787,7 +9787,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   var buffer = "", stack1, functionType="function", escapeExpression=this.escapeExpression;
 
 
-  buffer += "<div class=\"small-12 columns\">\n	<div class=\"row collapse\">\n		<div class=\"small-10 columns\">\n			<input type=\"text\" class=\"search-term\" value=\"";
+  buffer += "<div class=\"small-12 columns\">\n	<h1>Find Photos</h1>\n	<div class=\"row collapse\">\n		<div class=\"small-10 columns\">\n			<input type=\"text\" class=\"search-term\" value=\"";
   if (stack1 = helpers.term) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.term; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)
